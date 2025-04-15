@@ -46,6 +46,7 @@ nunit-*.xml
 Thumbs.db
 
 # Special cases (keep appsettings.json but ignore secrets)
+appsettings.Development.json
 appsettings.json
 appsettings.*.json  # Excludes environment-specific (e.g., Development, Production)
 appsettings.local.json  # For local overrides (explicitly ignored)
