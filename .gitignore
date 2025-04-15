@@ -1,0 +1,52 @@
+### .NET Core / .NET 5+ ###
+# Build & test outputs
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+*.binlog
+
+# NuGet & packages
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+
+# IDE & tool temp files
+*.user
+*.suo
+*.userprefs
+*.userosscache
+*.sln.iml
+.vs/
+.idea/
+.vscode/
+
+# OS & editor temp files
+~$*
+*~
+.DS_Store
+Thumbs.db
+
+# Special cases (keep appsettings.json but ignore secrets)
+appsettings.json
+appsettings.*.json  # Excludes environment-specific (e.g., Development, Production)
+appsettings.local.json  # For local overrides (explicitly ignored)
+secrets.json  # ASP.NET Core secrets file
