@@ -7,6 +7,9 @@ namespace BookStore.Models
     {
         public DbSet<Book> Books { get; set; }
         public DbSet<Book> Category { get; set; }
+       
+        public DbSet<Plan> Plans { get; set; }
+        public DbSet<Mission> Missions { get; set; }
 
         public BookStoreContext(DbContextOptions<BookStoreContext> options)
     : base(options)
