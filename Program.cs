@@ -20,7 +20,7 @@ namespace BookStore
                 options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
 
-            builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
+            builder.Services.AddScoped<IPlanRepo,PlanRepo>();
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
