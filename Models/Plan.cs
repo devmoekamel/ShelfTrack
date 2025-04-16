@@ -2,10 +2,9 @@
 
 namespace BookStore.Models
 {
-    public class Plan
+    public class Plan : BaseModel
     {
 
-        public int Id { get; set; }
 
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
@@ -14,6 +13,7 @@ namespace BookStore.Models
 
         [ForeignKey(nameof(UserId))]
         public ApplicationUser User { get; set; }
+        [ForeignKey(nameof(Book))]
         public int BookId { get; set; }
         public  Book Book { get; set; }
 

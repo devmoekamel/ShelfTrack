@@ -1,4 +1,6 @@
+using BookStore.Interfaces;
 using BookStore.Models;
+using BookStore.Reporisatory;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 namespace BookStore
@@ -9,10 +11,8 @@ namespace BookStore
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<BookStoreContext>(options =>
@@ -20,9 +20,9 @@ namespace BookStore
                 options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
 
+            builder.Services.AddScoped(typeof(IGenericRepo<>), typeof(GenericRepo<>));
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

@@ -2,9 +2,8 @@
 
 namespace BookStore.Models
 {
-    public class Mission
+    public class Mission : BaseModel
     {
-        public int Id { get; set; } 
         public int NumOfPages { get; set; }
 
         public DateTime Date { get; set; }
