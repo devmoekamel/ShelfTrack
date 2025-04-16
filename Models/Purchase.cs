@@ -2,7 +2,7 @@
 
 namespace BookStore.Models
 {
-    public class Purchase
+    public class Purchase:BaseModel
     {
         public int Id { get; set; }
         [ForeignKey("User")]

@@ -1,6 +1,8 @@
-﻿namespace BookStore.Interfaces
+﻿using BookStore.Models;
+
+namespace BookStore.Interfaces
 {
-    public interface IPurchaseRepository
+    public interface IPurchaseRepository:IGenericRepo<Purchase>
     {
     }
 }
