@@ -1,6 +1,9 @@
-﻿namespace BookStore.Models
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace BookStore.Models
 {
-    public class ApplicationUser
+    public class ApplicationUser : IdentityUser
     {
+
     }
 }
