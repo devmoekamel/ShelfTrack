@@ -11,6 +11,8 @@ namespace BookStore.Models
         public DbSet<Plan> Plans { get; set; }
         public DbSet<Mission> Missions { get; set; }
 
+        public DbSet<Purchase> Purchases{ get; set; }
+        public DbSet<Review> Reviews { get; set; }
         public BookStoreContext(DbContextOptions<BookStoreContext> options)
     : base(options)
         {
