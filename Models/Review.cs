@@ -5,9 +5,9 @@ namespace BookStore.Models
     public class Review:BaseModel
     {
         public int Id { get; set; }
-        [ForeignKey("User")]
-        public int UserId { get; set; }
-        [ForeignKey("Book")]
+        [ForeignKey(nameof(User))]
+        public string UserId { get; set; }
+        [ForeignKey(nameof(Book))]
         public int BookId { get; set; }
         public int Rating { get; set; }
         public string Comment { get; set; }

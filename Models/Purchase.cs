@@ -5,9 +5,9 @@ namespace BookStore.Models
     public class Purchase:BaseModel
     {
         public int Id { get; set; }
-        [ForeignKey("User")]
-        public int UserId { get; set; }
-        [ForeignKey("Book")]
+        [ForeignKey(nameof(User))]
+        public string UserId { get; set; }
+        [ForeignKey(nameof(Book))]
         public int BookId { get; set; }
         public DateTime PurchaseDate { get; set; }
 

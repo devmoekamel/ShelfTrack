@@ -3,9 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BookStore.Models
 {
-    public class Book
+    public class Book:BaseModel
     {
-        public int BookID { get; set; }
 
         public string Title { get; set; }
 
@@ -19,7 +18,7 @@ namespace BookStore.Models
 
         public int PageCount { get; set; }
 
-        public decimal Price { get; set; }
+        public double Price { get; set; }
 
         public string CoverImageURL { get; set; }
 
@@ -27,7 +26,7 @@ namespace BookStore.Models
 
         public bool IsFree { get; set; }
 
-        [ForeignKey("Category")]
+        [ForeignKey(nameof(Category))]
         public int Categoryid { get; set; }
         public Category? Category { get; set; }
     }

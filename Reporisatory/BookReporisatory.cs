@@ -1,4 +1,5 @@
-﻿using BookStore.Models;
+﻿using BookStore.context;
+using BookStore.Models;
 
 namespace BookStore.Reporisatory
 {

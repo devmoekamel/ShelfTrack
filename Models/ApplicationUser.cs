@@ -6,5 +6,6 @@ namespace BookStore.Models
     {
         public DateTime JoinDate { get; set; }
         public int Streak { get; set; }
+
     }
 }
