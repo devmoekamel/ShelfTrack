@@ -33,8 +33,8 @@ namespace BookStore.Reporisatory
         }
         public void RemoveById(int id)
         {
-
-            context.Set<T>().Remove(GetById(id));
+            var existingEntity = GetById(id);
+            existingEntity.IsDeleted = false;
         }
 
         public void Update(int id, T obj)
@@ -42,7 +42,6 @@ namespace BookStore.Reporisatory
             var existingEntity = GetById(id);
             if (existingEntity != null)
             {
-                //context.Entry(existingEntity).CurrentValues.SetValues(obj);
                 context.Set<T>().Update(existingEntity);
             }
         }
