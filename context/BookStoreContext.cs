@@ -8,7 +8,7 @@ namespace BookStore.context
     public class BookStoreContext : IdentityDbContext<ApplicationUser>
     {
         public DbSet<Book> Books { get; set; }
-        public DbSet<Book> Category { get; set; }
+        public DbSet<Category> Categories { get; set; }
 
         public DbSet<Plan> Plans { get; set; }
         public DbSet<Mission> Missions { get; set; }

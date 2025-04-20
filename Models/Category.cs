@@ -2,10 +2,9 @@
 
 namespace BookStore.Models
 {
-    public class Category
+    public class Category :BaseModel
     {
-        [Key]
-        public int CategoryID { get; set; }
+        public int Id { get; set; }
 
         public string Name { get; set; }
 
