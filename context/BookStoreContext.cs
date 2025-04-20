@@ -17,5 +17,16 @@ namespace BookStore.context
         public DbSet<Review> Reviews { get; set; }
         public BookStoreContext(DbContextOptions<BookStoreContext> options) : base(options) { }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Category>().HasData(
+                new Category { Id = 1, Name = "Fiction" },
+                new Category { Id = 2, Name = "Scientific" },
+                new Category { Id = 3, Name = "History" }
+            );
+        }
+
     }
 }
