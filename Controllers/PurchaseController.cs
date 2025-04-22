@@ -2,6 +2,7 @@
 using BookStore.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
@@ -30,7 +31,8 @@ namespace BookStore.Controllers
         [HttpGet]
         public IActionResult GetAllPurchases()
         {
-            var purchases = purchaseRepository.GetAll();
+            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+            var purchases = purchaseRepository.GetAll().Where(u => u.UserId == userId);
             return Ok(purchases);
         }
 
@@ -38,6 +40,7 @@ namespace BookStore.Controllers
         [HttpGet("{id:int}")]
         public IActionResult GetByIdPurchase(int id)
         {
+
             var purchase = purchaseRepository.GetById(id);
             if (purchase == null)
                 return NotFound();
@@ -56,9 +59,11 @@ namespace BookStore.Controllers
             return NoContent();
         }
         //GetByUserId
-        [HttpGet("user/{userId:int}")]
-        public IActionResult GetByUserId(int userId)
+        [HttpGet("user")]
+        public IActionResult GetByUserId()
         {
+            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
             var purchase = purchaseRepository.GetAll().Where(u => u.UserId == userId);
             return Ok(purchase);
         }
