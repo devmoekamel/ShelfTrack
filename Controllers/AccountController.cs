@@ -25,7 +25,7 @@ namespace BookStore.Controllers
             this.config = config;
         }
 
-        [HttpPost("/register")]
+        [HttpPost("register")]
         public async Task<ActionResult> Register(RegisterDTO registerdata)
         {
           if(ModelState.IsValid)
@@ -61,7 +61,7 @@ namespace BookStore.Controllers
 
            
         }
-        [HttpPost("/login")]
+        [HttpPost("login")]
         public async Task<ActionResult> Login(LoginDTO loginData) 
         {
             if(ModelState.IsValid)

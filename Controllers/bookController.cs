@@ -54,7 +54,7 @@ namespace BookStore.Controllers
         }
         //[Authorize(Roles = "User")]
 
-        [HttpGet]
+        [HttpGet,Authorize(Roles ="User")]
         public IActionResult GetAll()
         {
             var books = bookrepo.GetAll();

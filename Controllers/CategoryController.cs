@@ -20,7 +20,11 @@ namespace BookStore.Controllers
         [HttpGet]
         public ActionResult GetAll()
         {
-            var categories = _categoryRepo.GetAll();
+            var categories = _categoryRepo.GetAll().Select(c=>new CategoryDTO()
+            {
+                Id = c.Id, 
+                Name = c.Name,
+            });
             return Ok(categories);
         }
 

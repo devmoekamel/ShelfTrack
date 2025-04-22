@@ -26,7 +26,56 @@ namespace BookStore.context
                 new Category { Id = 2, Name = "Scientific" },
                 new Category { Id = 3, Name = "History" }
             );
-        }
 
+
+            modelBuilder.Entity<Book>().HasData(
+                    new Book
+                    {
+                        Id = 1,
+                        Title = "The Great Gatsby",
+                        Author = "F. Scott Fitzgerald",
+                        Description = "A novel set in the Roaring Twenties.",
+                        Genre = "Novel",
+                        ISBN = "9780743273565",
+                        PageCount = 180,
+                        Price = 9.99,
+                        CoverImageURL = "https://example.com/gatsby.jpg",
+                        PublishedDate = new DateTime(1925, 4, 10),
+                        IsFree = false,
+                        Categoryid = 1 // Fiction
+                    },
+                     new Book
+                     {
+                         Id = 2,
+                         Title = "The Great Gatsby",
+                         Author = "F. Scott Fitzgerald",
+                         Description = "A novel set in the Roaring Twenties.",
+                         Genre = "Novel",
+                         ISBN = "9780743273565",
+                         PageCount = 180,
+                         Price = 9.99,
+                         CoverImageURL = "https://example.com/gatsby.jpg",
+                         PublishedDate = new DateTime(1925, 4, 10),
+                         IsFree = false,
+                         Categoryid = 2 // Fiction
+                     },
+                      new Book
+                      {
+                          Id=3,
+                          Title = "The Great Gatsby",
+                          Author = "F. Scott Fitzgerald",
+                          Description = "A novel set in the Roaring Twenties.",
+                          Genre = "Novel",
+                          ISBN = "9780743273565",
+                          PageCount = 180,
+                          Price = 9.99,
+                          CoverImageURL = "https://example.com/gatsby.jpg",
+                          PublishedDate = new DateTime(1925, 4, 10),
+                          IsFree = false,
+                          Categoryid = 3 // Fiction
+                      }
+                    );
+
+        }
     }
 }
