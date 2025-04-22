@@ -6,7 +6,7 @@ namespace BookStore.Models
     {
         public int Id { get; set; }
         [ForeignKey(nameof(User))]
-        public string UserId { get; set; }
+        public int UserId { get; set; }
         [ForeignKey(nameof(Book))]
         public int BookId { get; set; }
         public DateTime PurchaseDate { get; set; }
