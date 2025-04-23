@@ -1,67 +1,4 @@
-﻿//using BookStore.Interfaces;
-//using BookStore.Models;
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-
-//namespace BookStore.Controllers
-//{
-//    [Route("api/[controller]")]
-//    [ApiController]
-//    public class ReviewController : ControllerBase
-//    {
-//        private readonly IReviewRepository reviewRepository;
-//        public ReviewController(IReviewRepository reviewRepository)
-//        {
-//           this.reviewRepository = reviewRepository;
-//        }
-
-//        //add review
-//        [HttpPost]
-//        public IActionResult AddReview([FromBody]Review review)
-//        {
-//            if (review == null)
-//                return BadRequest();
-
-//            review.ReviewDate = DateTime.Now;
-//            reviewRepository.Add(review);
-//            reviewRepository.Save();
-//            return Ok(review);
-//        }
-
-//        //Get all review
-//        [HttpGet]
-//        public IActionResult GetAllReview()
-//        {
-//            var reviews = reviewRepository.GetAll();
-//            return Ok(reviews);
-//        }
-
-//        //GetReview by Id
-//        [HttpGet("{id:int}")]
-//        public IActionResult GetById(int id)
-//        {
-//            var review = reviewRepository.GetById(id);
-//            if (review == null)
-//                return NotFound();
-//            return Ok(review);
-//        }
-
-//        //
-//    }
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-using BookStore.DTO;
+﻿using BookStore.DTO;
 using BookStore.Interfaces;
 using BookStore.Models;
 using BookStore.Reporisatory;
@@ -151,6 +88,7 @@ namespace BookStore.Controllers
         }
 
 
+
         // GET: api/Review
         [HttpGet]
         public IActionResult GetAllReview()
@@ -158,11 +96,11 @@ namespace BookStore.Controllers
             var reviews = reviewRepository.GetAll()
                 .Include(r => r.Book)
                 .Include(r => r.User)
-                .Select(r => new ReviewDTO
+                .Select(r => new
                 {
                     Id = r.Id,
-                  
-                     BookId = r.BookId,
+                    BookTitle = r.Book.Title,     
+                    UserName = r.User.UserName,    
                     Rating = r.Rating,
                     Comment = r.Comment,
                     ReviewDate = r.ReviewDate
@@ -171,6 +109,8 @@ namespace BookStore.Controllers
 
             return Ok(reviews);
         }
+
+
 
         // GET: api/Review/{id}
         [HttpGet("{id:int}")]
@@ -184,18 +124,19 @@ namespace BookStore.Controllers
             if (review == null)
                 return NotFound();
 
-            var reviewDTO = new ReviewDTO
+            var result = new
             {
                 Id = review.Id,
-               
-                BookId = review.BookId,
+                BookTitle = review.Book.Title,      
+                UserName = review.User.UserName,    
                 Rating = review.Rating,
                 Comment = review.Comment,
                 ReviewDate = review.ReviewDate
             };
 
-            return Ok(reviewDTO);
+            return Ok(result);
         }
+
 
 
         // DELETE: api/Review/{id}
@@ -214,6 +155,48 @@ namespace BookStore.Controllers
 
             return Ok("Review Deleted succefully");
         }
+
+        [HttpGet("book/{bookId:int}")]
+        public IActionResult GetReviewsByBook(int bookId)
+        {
+            var reviews = reviewRepository.GetAll()
+                .Include(r => r.User)
+                .Where(r => r.BookId == bookId)
+                .Select(r => new ReviewDTO
+                {
+                    Id = r.Id,
+                    BookId = r.BookId,
+                    BookTitle = r.Book.Title,
+                    UserId = r.UserId,
+                    UserName = r.User.UserName,
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    ReviewDate = r.ReviewDate
+                }).ToList();
+
+            return Ok(reviews);
+        }
+
+        [HttpGet("top-books")]
+        public IActionResult GetTopRatedBooks()
+        {
+            var topBooks = reviewRepository.GetAll()
+                .GroupBy(r => r.BookId)
+                .Select(g => new
+                {
+                    BookId = g.Key,
+                    AverageRating = g.Average(r => r.Rating),
+                    ReviewCount = g.Count(),
+                    BookTitle = g.First().Book.Title
+                })
+                .OrderByDescending(b => b.AverageRating)
+                .ThenByDescending(b => b.ReviewCount)
+                .Take(5)
+                .ToList();
+
+            return Ok(topBooks);
+        }
+
 
     }
 }
