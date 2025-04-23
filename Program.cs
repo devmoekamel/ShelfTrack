@@ -28,6 +28,7 @@ namespace BookStore
             builder.Services.AddScoped<IPlanRepo,PlanRepo>();
             builder.Services.AddScoped<IBookReporisatory, BookReporisatory>();
             builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
+            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
             builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
             builder.Services.AddScoped<IMissionRepo, MissionRepo>();
 
