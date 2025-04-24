@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.Controllers
 {
@@ -42,34 +43,86 @@ namespace BookStore.Controllers
             return Ok(purchase); 
         }
 
-        // GET: api/Purchase
+        // // GET: api/Purchase
+        // [HttpGet]
+        //// [Authorize(Roles ="Admin")]
+        // public IActionResult GetAllPurchases()
+        // {
+        //     string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+        //     if (string.IsNullOrEmpty(userId))
+        //     {
+        //         return BadRequest("User not authenticated");
+        //     }
+
+        //     var purchases = purchaseRepository.GetAll().
+
+        //         //.Where(u => u.UserId == userId);
+        //     return Ok(purchases); 
+        // }
+
         [HttpGet]
-       // [Authorize(Roles ="Admin")]
+       // [Authorize] 
         public IActionResult GetAllPurchases()
         {
-            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+           // string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            if (string.IsNullOrEmpty(userId))
-            {
-                return BadRequest("User not authenticated");
-            }
+            //if (string.IsNullOrEmpty(userId))
+            //    return BadRequest("User not authenticated");
 
-            var purchases = purchaseRepository.GetAll().Where(u => u.UserId == userId);
-            return Ok(purchases); 
+            var purchases = purchaseRepository.GetAll()
+                .Include(p => p.Book)
+                .Include(p => p.User)
+                //.Where(p => p.UserId == userId)
+                .Select(p => new PurchaseDisplayDTO
+                {
+                    Id = p.Id,
+                    BookTitle = p.Book.Title,
+                    UserName = p.User.UserName,
+                    PurchaseDate = p.PurchaseDate
+                })
+                .ToList();
+
+            return Ok(purchases);
         }
 
+
         // GET: api/Purchase/{id}
+        //[HttpGet("{id:int}")]
+        //public IActionResult GetByIdPurchase(int id)
+        //{
+        //    var purchase = purchaseRepository.GetById(id);
+        //    if (purchase == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return Ok(purchase); 
+        //}
+
         [HttpGet("{id:int}")]
         public IActionResult GetByIdPurchase(int id)
         {
-            var purchase = purchaseRepository.GetById(id);
+            var purchase = purchaseRepository.GetAll()
+                .Include(r => r.User)
+                .Include(r => r.Book)
+                .Where(r => r.Id == id)
+                .Select(r => new PurchaseDisplayDTO
+                {
+                    Id = r.Id,
+                    BookTitle = r.Book.Title,
+                    UserName = r.User.UserName,
+                    PurchaseDate = r.PurchaseDate
+                }).FirstOrDefault();
             if (purchase == null)
             {
                 return NotFound();
             }
 
-            return Ok(purchase); 
+            return Ok(purchase);
         }
+
+
 
         // DELETE: api/Purchase/{id}
         [HttpDelete("{id:int}")]
