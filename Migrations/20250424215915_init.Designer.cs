@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookStore.Migrations
 {
     [DbContext(typeof(BookStoreContext))]
-    [Migration("20250422204142_AllTables")]
-    partial class AllTables
+    [Migration("20250424215915_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -151,6 +151,56 @@ namespace BookStore.Migrations
                     b.HasIndex("Categoryid");
 
                     b.ToTable("Books");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Author = "F. Scott Fitzgerald",
+                            Categoryid = 1,
+                            CoverImageURL = "https://example.com/gatsby.jpg",
+                            Description = "A novel set in the Roaring Twenties.",
+                            Genre = "Novel",
+                            ISBN = "9780743273565",
+                            IsDeleted = false,
+                            IsFree = false,
+                            PageCount = 180,
+                            Price = 9.9900000000000002,
+                            PublishedDate = new DateTime(1925, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "The Great Gatsby"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Author = "F. Scott Fitzgerald",
+                            Categoryid = 2,
+                            CoverImageURL = "https://example.com/gatsby.jpg",
+                            Description = "A novel set in the Roaring Twenties.",
+                            Genre = "Novel",
+                            ISBN = "9780743273565",
+                            IsDeleted = false,
+                            IsFree = false,
+                            PageCount = 180,
+                            Price = 9.9900000000000002,
+                            PublishedDate = new DateTime(1925, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "The Great Gatsby"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Author = "F. Scott Fitzgerald",
+                            Categoryid = 3,
+                            CoverImageURL = "https://example.com/gatsby.jpg",
+                            Description = "A novel set in the Roaring Twenties.",
+                            Genre = "Novel",
+                            ISBN = "9780743273565",
+                            IsDeleted = false,
+                            IsFree = false,
+                            PageCount = 180,
+                            Price = 9.9900000000000002,
+                            PublishedDate = new DateTime(1925, 4, 10, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            Title = "The Great Gatsby"
+                        });
                 });
 
             modelBuilder.Entity("BookStore.Models.Category", b =>

@@ -107,31 +107,31 @@ namespace BookStore.Controllers
 
             return Ok(existingBook);
         }
-       
-        //[HttpPost("buy/{id}")]
-        ////[Authorize(Roles = "User")]
-        //public IActionResult Buy(int id)
-        //{
-        //    var book = bookrepo.GetById(id);
-        //    if (book == null)
-        //    {
-        //        return NotFound("Book not found");
-        //    }
 
-        //    string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        [HttpPost("buy/{id}")]
+        //[Authorize(Roles = "User")]
+        public IActionResult Buy(int id)
+        {
+            var book = bookrepo.GetById(id);
+            if (book == null)
+            {
+                return NotFound("Book not found");
+            }
 
-        //    var purchase = new Purchase
-        //    {
-        //        BookId = id,
-        //        UserId = userId,
-        //        PurchaseDate = DateTime.Now
-        //    };
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        //    ipurchase.Add(purchase);
-        //    ipurchase.Save();
+            var purchase = new Purchase
+            {
+                BookId = id,
+                UserId = userId,
+                PurchaseDate = DateTime.Now
+            };
 
-        //    return Ok(new { message = "Purchase recorded successfully", book });
-        //}
+            ipurchase.Add(purchase);
+            ipurchase.Save();
+
+            return Ok(new { message = "Purchase recorded successfully", book });
+        }
         ////[Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)

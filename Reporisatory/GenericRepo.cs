@@ -20,12 +20,12 @@ namespace BookStore.Reporisatory
 
         public IEnumerable<T> GetAll()
         {
-            return context.Set<T>();
+            return context.Set<T>().Where(e=>e.IsDeleted==false);
         }
 
         public T GetById(int Id)
         {
-            return context.Set<T>().FirstOrDefault(x => x.Id==Id);
+            return context.Set<T>().Where(e=>e.IsDeleted==false).FirstOrDefault(x => x.Id==Id);
         }
 
         public void RemoveByObj(T obj)
@@ -35,7 +35,7 @@ namespace BookStore.Reporisatory
         public void RemoveById(int id)
         {
             var existingEntity = GetById(id);
-            existingEntity.IsDeleted = false;
+            existingEntity.IsDeleted = true;
         }
 
         public void Update(int id, T obj)

@@ -47,7 +47,7 @@ namespace BookStore.Controllers
             reviewRepository.Add(review);
             reviewRepository.Save();
 
-            return Ok(review);
+            return Ok(reviewDTO);
         }
 
         // PUT: api/Review/{id}
@@ -149,7 +149,7 @@ namespace BookStore.Controllers
                 return NotFound("Review not found");
             }
 
-           reviewRepository.RemoveById(id);
+           reviewRepository.RemoveByObj(review);
             reviewRepository.Save();
 
 
@@ -160,16 +160,11 @@ namespace BookStore.Controllers
         public IActionResult GetReviewsByBook(int bookId)
         {
             var reviews = reviewRepository.GetAll()
-                .Include(r => r.User)
-                .Where(r => r.BookId == bookId)
-                .Select(r => new ReviewDTO
+                .Where(r => r.BookId == bookId )
+                .Select(r => new DisplayReviewDTO
                 {
                     Id = r.Id,
-                    BookId = r.BookId,
-                    BookTitle = r.Book.Title,
-                    UserId = r.UserId,
-                    UserName = r.User.UserName,
-                    Rating = r.Rating,
+                    Rate = r.Rating,
                     Comment = r.Comment,
                     ReviewDate = r.ReviewDate
                 }).ToList();

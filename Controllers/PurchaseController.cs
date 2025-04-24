@@ -10,21 +10,25 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.Controllers
 {
+    [Authorize (Roles ="User")]
+    
     [Route("api/[controller]")]
     [ApiController]
     public class PurchaseController : ControllerBase
     {
         private readonly IPurchaseRepository purchaseRepository;
-
+        private readonly string userId;
         public PurchaseController(IPurchaseRepository purchaseRepository)
         {
             this.purchaseRepository = purchaseRepository;
+           
         }
 
         // POST: api/Purchase
         [HttpPost]
         public IActionResult AddPurchases([FromBody] PurchaseDTO purchaseDTO)
         {
+          string  userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState); 
@@ -32,15 +36,16 @@ namespace BookStore.Controllers
 
             var purchase = new Purchase
             {
-                UserId = purchaseDTO.UserId,
+                //UserId = purchaseDTO.UserId,
+                UserId = userId,
                 BookId = purchaseDTO.BookId,
-                PurchaseDate = DateTime.Now 
+                PurchaseDate = purchaseDTO.PurchaseDate
             };
 
             purchaseRepository.Add(purchase);
             purchaseRepository.Save();
 
-            return Ok(purchase); 
+            return Ok(purchaseDTO); 
         }
 
         // // GET: api/Purchase
@@ -78,7 +83,7 @@ namespace BookStore.Controllers
                 {
                     Id = p.Id,
                     BookTitle = p.Book.Title,
-                    UserName = p.User.UserName,
+                    //UserName = p.User.UserName,
                     PurchaseDate = p.PurchaseDate
                 })
                 .ToList();
@@ -111,7 +116,6 @@ namespace BookStore.Controllers
                 {
                     Id = r.Id,
                     BookTitle = r.Book.Title,
-                    UserName = r.User.UserName,
                     PurchaseDate = r.PurchaseDate
                 }).FirstOrDefault();
             if (purchase == null)
@@ -146,7 +150,8 @@ namespace BookStore.Controllers
 
         public IActionResult GetByUserId()
         {
-            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
 
             if (string.IsNullOrEmpty(userId))
             {

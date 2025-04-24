@@ -78,6 +78,7 @@ namespace BookStore.Controllers
             _categoryRepo.Add(newCategory);
             _categoryRepo.Save();
 
+            //return Ok(categoryDto);
             return Ok(newCategory);
         }
 
