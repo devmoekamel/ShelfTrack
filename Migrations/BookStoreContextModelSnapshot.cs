@@ -44,6 +44,9 @@ namespace BookStore.Migrations
                     b.Property<DateTime>("JoinDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime>("LastMissionDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 

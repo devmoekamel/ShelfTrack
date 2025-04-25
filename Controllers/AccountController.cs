@@ -1,6 +1,7 @@
 ﻿using BookStore.DTO;
 using BookStore.DTOs;
 using BookStore.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -119,7 +120,38 @@ namespace BookStore.Controllers
             return BadRequest(ModelState);
         }
 
-       
+        [Authorize(Roles ="User")]
+        [HttpGet("profile")]
+        public async Task<ActionResult> GetUserProfile()
+        {
+            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
+
+            ApplicationUser  applicationUser   =   await userManager.FindByIdAsync(userId);
+            
+             if(User == null)
+            {
+                return NotFound("No user found with this id");
+            }
+
+            Console.WriteLine($"{applicationUser.Streak}");
+             if(applicationUser.Streak == null 
+                && applicationUser.LastMissionDate < DateTime.Today.AddDays(-1)
+                && applicationUser.Streak>0) 
+            {
+                applicationUser.Streak = 0;
+                await userManager.UpdateAsync(applicationUser);
+
+            }
+            UserProfileDTO profile = new()
+            {
+                Email = applicationUser.Email,
+                Streak= applicationUser.Streak,
+                UserName= applicationUser.UserName
+            };
+
+            return Ok(profile);
+
+        }
 
 
 

@@ -9,5 +9,10 @@ namespace BookStore.Reporisatory
         public PlanRepo(BookStoreContext _context) : base(_context)
         {
         }
+
+        public Plan GetplanByBookId(int bookId)
+        {
+            return GetAll().Where(p => p.BookId == bookId).FirstOrDefault();
+        }
     }
 }

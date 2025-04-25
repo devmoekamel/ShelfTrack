@@ -22,7 +22,15 @@ namespace BookStore.Controllers
         public ActionResult getAll()
         {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            var plans = planRepo.GetAll().Where(p => p.UserId == userId);
+            var plans = planRepo
+                        .GetAll()
+                        .Where(p => p.UserId == userId)
+                        .Select(p=>new PlanDTO()
+                        {
+                            BookId = p.Id,
+                            StartDate = p.StartDate,
+                            EndDate = p.EndDate 
+                        });
             return Ok(plans);
         }
 
@@ -35,8 +43,30 @@ namespace BookStore.Controllers
             return Ok(plan);
         }
 
-        [HttpPost]
+        [HttpGet("book/{id:int}")]
 
+        public ActionResult getPlanByBookId(int id)
+        {
+            var plan = planRepo.GetplanByBookId(id);
+
+            if(plan == null)
+            {
+                return NotFound("There's No Plan With This ID");
+            }
+
+            PlanDTO PlanData = new()
+            {
+                BookId = plan.BookId,
+                EndDate = plan.EndDate,
+                StartDate = plan.StartDate
+            };
+            
+            return Ok(PlanData);
+            
+        }
+
+
+        [HttpPost]
         public ActionResult AddPlan (PlanDTO PlanData)
         {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;

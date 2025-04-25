@@ -1,7 +1,9 @@
 ﻿using BookStore.DTO;
 using BookStore.Interfaces;
 using BookStore.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
@@ -10,10 +12,12 @@ namespace BookStore.Controllers
     public class MissionController : ControllerBase
     {
         private readonly IMissionRepo _missionRepo;
+        private readonly UserManager<ApplicationUser> userManager;
 
-        public MissionController(IMissionRepo missionRepo)
+        public MissionController(IMissionRepo missionRepo,UserManager<ApplicationUser> userManager)
         {
             _missionRepo = missionRepo;
+            this.userManager = userManager;
         }
         [HttpGet("Plan/{planId}")]
         public ActionResult GetMissionsByPlan(int planId)
@@ -31,11 +35,30 @@ namespace BookStore.Controllers
         }
 
         [HttpPost]
-        public ActionResult Add(MissionDTO dto)
+        public async Task<ActionResult> Add(MissionDTO dto)
         {
             if (!ModelState.IsValid) 
                 return BadRequest(ModelState);
+            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
+            ApplicationUser applicationUser = await userManager.FindByIdAsync(userId);
+            var today = DateTime.Today;
+            var lastDate = applicationUser.LastMissionDate.Date;
+            if(lastDate == today)
+            {
+                return Ok("Your already added mission today");
+            }
+            else if(lastDate == today.AddDays(-1))
+            {
+                applicationUser.Streak++;
+                await userManager.UpdateAsync(applicationUser);
+            }else if (lastDate<today.AddDays(-1))
+            {
+                applicationUser.Streak=1;
+                await userManager.UpdateAsync(applicationUser);
+            }
+
+            applicationUser.LastMissionDate = today;
             var mission = new Mission
             {
                 NumOfPages = dto.NumOfPages,
@@ -74,6 +97,9 @@ namespace BookStore.Controllers
             _missionRepo.Save();
             return Ok("Mission deleted successfully");
         }
+        //--------------------------------------------------------------------
 
+       
+       
     }
 }

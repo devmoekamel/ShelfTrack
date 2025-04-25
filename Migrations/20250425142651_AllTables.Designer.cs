@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BookStore.Migrations
 {
     [DbContext(typeof(BookStoreContext))]
-    [Migration("20250424215915_init")]
-    partial class init
+    [Migration("20250425142651_AllTables")]
+    partial class AllTables
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,6 +45,9 @@ namespace BookStore.Migrations
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("JoinDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("LastMissionDate")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("LockoutEnabled")
