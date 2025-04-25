@@ -149,7 +149,7 @@ namespace BookStore.Controllers
                 return NotFound("Review not found");
             }
 
-           reviewRepository.RemoveByObj(review);
+           reviewRepository.RemoveById(id);
             reviewRepository.Save();
 
 

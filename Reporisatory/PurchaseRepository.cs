@@ -14,7 +14,7 @@ namespace BookStore.Reporisatory
 
         public IQueryable<Purchase> GetAll()
         {
-            return context.Purchases;
+            return context.Purchases.Where(p=>!p.IsDeleted);
         }
     }
 }

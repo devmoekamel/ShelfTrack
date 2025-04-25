@@ -16,7 +16,7 @@ namespace BookStore.Reporisatory
 
         public IQueryable<Review> GetAll()
         {
-            return context.Reviews; 
+            return context.Reviews.Where(r => !r.IsDeleted); 
         }
 
     }

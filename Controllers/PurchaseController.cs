@@ -67,7 +67,7 @@ namespace BookStore.Controllers
         // }
 
         [HttpGet]
-       // [Authorize] 
+        [Authorize(Roles ="Admin")] 
         public IActionResult GetAllPurchases()
         {
            // string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
@@ -93,18 +93,6 @@ namespace BookStore.Controllers
 
 
         // GET: api/Purchase/{id}
-        //[HttpGet("{id:int}")]
-        //public IActionResult GetByIdPurchase(int id)
-        //{
-        //    var purchase = purchaseRepository.GetById(id);
-        //    if (purchase == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return Ok(purchase); 
-        //}
-
         [HttpGet("{id:int}")]
         public IActionResult GetByIdPurchase(int id)
         {
