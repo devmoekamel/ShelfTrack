@@ -22,7 +22,6 @@ namespace BookStore.Controllers
         {
             var categories = _categoryRepo.GetAll().Select(c=>new CategoryDTO()
             {
-                Id = c.Id, 
                 Name = c.Name,
             });
             return Ok(categories);
@@ -40,15 +39,15 @@ namespace BookStore.Controllers
 
             var dto = new CategoryWithBooksDTO
             {
-                Id = category.Id,
                 Name = category.Name,
-                Books = category.Books?.Select(b => new BookDTO
+                Books = category.Books?.Select(b => new BOOkDTO
                 {
                     Title = b.Title,
                     Author = b.Author,
+                    PageCount = b.PageCount,
                     Price = b.Price
 
-                }).ToList() ?? new List<BookDTO>()
+                }).ToList() ?? new List<BOOkDTO>()
             };
             return Ok(dto);
         }
@@ -60,7 +59,13 @@ namespace BookStore.Controllers
             var category = _categoryRepo.GetById(id);
             if (category == null)
                 return NotFound($"Category with ID {id} not found.");
-            return Ok(category);
+           
+            var categoryDto = new CategoryDTO
+            {
+                Name = category.Name
+            };
+
+            return Ok(categoryDto);
         }
 
         // POST: api/Category
@@ -78,8 +83,7 @@ namespace BookStore.Controllers
             _categoryRepo.Add(newCategory);
             _categoryRepo.Save();
 
-            //return Ok(categoryDto);
-            return Ok(newCategory);
+            return Ok(categoryDto);
         }
 
         // PUT: api/Category/5
@@ -94,7 +98,7 @@ namespace BookStore.Controllers
             _categoryRepo.Update(id, existingCategory);
             _categoryRepo.Save();
 
-            return Ok(existingCategory);
+            return Ok(categoryDto);
         }
 
         // DELETE: api/Category/5

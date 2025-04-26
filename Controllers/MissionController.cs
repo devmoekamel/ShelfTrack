@@ -1,12 +1,16 @@
 ﻿using BookStore.DTO;
 using BookStore.Interfaces;
 using BookStore.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection;
 using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
+    [Authorize(Roles = "User")]
+
     [Route("api/[controller]")]
     [ApiController]
     public class MissionController : ControllerBase
@@ -19,23 +23,39 @@ namespace BookStore.Controllers
             _missionRepo = missionRepo;
             this.userManager = userManager;
         }
+
         [HttpGet("Plan/{planId}")]
         public ActionResult GetMissionsByPlan(int planId)
         {
             var missions = _missionRepo.GetMissionsByPlanId(planId);
-            return Ok(missions);
+            var missionDtos = missions.Select(m => new MissionDTO
+            {
+                NumOfPages = m.NumOfPages,
+                Date = m.Date
+            }).ToList();
+
+            return Ok(missionDtos);
+
         }
 
         [HttpGet("{id:int}")]
         public ActionResult GetById(int id)
         {
             var mission = _missionRepo.GetById(id);
-            if (mission == null) return NotFound();
-            return Ok(mission);
+            if (mission == null) 
+                return NotFound($"Mission with ID {id} not found.");
+
+            var missionDto = new MissionDTO
+            {
+                NumOfPages = mission.NumOfPages,
+                Date = mission.Date
+            };
+
+            return Ok(missionDto);
         }
 
         [HttpPost]
-        public async Task<ActionResult> Add(MissionDTO dto)
+        public async Task<ActionResult> Add(MissionAddDTO dto)
         {
             if (!ModelState.IsValid) 
                 return BadRequest(ModelState);
@@ -68,23 +88,23 @@ namespace BookStore.Controllers
 
             _missionRepo.Add(mission);
             _missionRepo.Save();
-            return Ok(mission);
+            return Ok(dto);
         }
 
         [HttpPut("{id:int}")]
         public ActionResult Update(int id, MissionDTO dto)
         {
             var mission = _missionRepo.GetById(id);
-            if (mission == null) 
-                return NotFound();
+            if (mission == null)
+                return NotFound($"Mission with ID {id} not found.");
 
             mission.NumOfPages = dto.NumOfPages;
             mission.Date = dto.Date;
-            mission.PlanId = dto.PlanId;
+           
 
             _missionRepo.Update(id, mission);
             _missionRepo.Save();
-            return Ok(mission);
+            return Ok(dto);
         }
 
         [HttpDelete("{id:int}")]
@@ -93,7 +113,7 @@ namespace BookStore.Controllers
             var mission = _missionRepo.GetById(id);
             if (mission == null) return NotFound();
 
-            _missionRepo.RemoveById(id);
+            _missionRepo.RemoveByObj(mission);
             _missionRepo.Save();
             return Ok("Mission deleted successfully");
         }
