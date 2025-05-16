@@ -47,6 +47,9 @@ namespace BookStore.Controllers
                     if (!roleExists)
                     {
                        await roleManager.CreateAsync(new IdentityRole(userRole));
+                        await roleManager.CreateAsync(new IdentityRole("Admin"));
+                        await userManager.AddToRoleAsync(newuser, "Admin");
+
                     }
                     await userManager.AddToRoleAsync(newuser, userRole);
                     return Ok("created User Successfully");

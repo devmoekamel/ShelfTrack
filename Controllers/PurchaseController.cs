@@ -36,7 +36,7 @@ namespace BookStore.Controllers
 
             var purchase = new Purchase
             {
-                //UserId = purchaseDTO.UserId,
+              
                 UserId = userId,
                 BookId = purchaseDTO.BookId,
                 PurchaseDate = purchaseDTO.PurchaseDate
@@ -48,42 +48,23 @@ namespace BookStore.Controllers
             return Ok(purchaseDTO); 
         }
 
-        // // GET: api/Purchase
-        // [HttpGet]
-        //// [Authorize(Roles ="Admin")]
-        // public IActionResult GetAllPurchases()
-        // {
-        //     string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
-        //     if (string.IsNullOrEmpty(userId))
-        //     {
-        //         return BadRequest("User not authenticated");
-        //     }
-
-        //     var purchases = purchaseRepository.GetAll().
-
-        //         //.Where(u => u.UserId == userId);
-        //     return Ok(purchases); 
-        // }
+      
 
         [HttpGet]
         [Authorize(Roles ="Admin")] 
         public IActionResult GetAllPurchases()
         {
-           // string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
-            //if (string.IsNullOrEmpty(userId))
-            //    return BadRequest("User not authenticated");
 
             var purchases = purchaseRepository.GetAll()
                 .Include(p => p.Book)
                 .Include(p => p.User)
-                //.Where(p => p.UserId == userId)
+              
                 .Select(p => new PurchaseDisplayDTO
                 {
                     Id = p.Id,
                     BookTitle = p.Book.Title,
-                    //UserName = p.User.UserName,
+
                     PurchaseDate = p.PurchaseDate
                 })
                 .ToList();
@@ -147,7 +128,7 @@ namespace BookStore.Controllers
             }
 
             var purchases = purchaseRepository.GetAll().Where(u => u.UserId == userId);
-            return Ok(purchases); // 
+            return Ok(purchases); 
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using BookStore.DTO;
 using BookStore.Interfaces;
 using BookStore.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -9,6 +10,7 @@ namespace BookStore.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "User")]
     public class PlanController : ControllerBase
     {
         private readonly IPlanRepo planRepo;

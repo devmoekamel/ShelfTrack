@@ -24,7 +24,7 @@ namespace BookStore.Controllers
             this.ipurchase= ipurchase;
             this.reivew = reivew;
         }
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public IActionResult add(BookDTO bookdata)
         {
@@ -54,9 +54,8 @@ namespace BookStore.Controllers
 
 
         }
-        //[Authorize(Roles = "User")]
 
-        [HttpGet,Authorize(Roles ="User")]
+        [HttpGet]
         public IActionResult GetAll()
         {
             var books = bookrepo.GetAll();
@@ -110,8 +109,8 @@ namespace BookStore.Controllers
             return Ok(existingBook);
         }
 
-       
-        ////[Authorize(Roles = "Admin")]
+
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {

@@ -1,10 +1,12 @@
 ﻿using BookStore.DTO;
 using BookStore.Interfaces;
 using BookStore.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookStore.Controllers
 {
+
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase
@@ -16,7 +18,10 @@ namespace BookStore.Controllers
             _categoryRepo = categoryRepo;
         }
 
+
         // GET: api/Category
+      [Authorize(Roles = "User")]
+
         [HttpGet]
         public ActionResult GetAll()
         {
@@ -26,6 +31,8 @@ namespace BookStore.Controllers
             });
             return Ok(categories);
         }
+
+        [Authorize(Roles = "User")]
 
         // GET: api/Category/WithBooks/5
         [HttpGet("WithBooks/{id:int}")]
@@ -69,6 +76,8 @@ namespace BookStore.Controllers
         }
 
         // POST: api/Category
+        [Authorize(Roles = "Admin")]
+
         [HttpPost]
         public ActionResult AddCategory(CategoryDTO categoryDto)
         {
@@ -87,6 +96,8 @@ namespace BookStore.Controllers
         }
 
         // PUT: api/Category/5
+        [Authorize(Roles = "Admin")]
+
         [HttpPut("{id:int}")]
         public ActionResult UpdateCategory(int id, CategoryDTO categoryDto)
         {
@@ -102,6 +113,8 @@ namespace BookStore.Controllers
         }
 
         // DELETE: api/Category/5
+        [Authorize(Roles = "Admin")]
+
         [HttpDelete("{id:int}")]
         public ActionResult DeleteCategory(int id)
         {

@@ -9,6 +9,8 @@ using System.Security.Claims;
 
 namespace BookStore.Controllers
 {
+    [Authorize(Roles = "User")]
+
     [Route("api/[controller]")]
     [ApiController]
     public class ReviewController : ControllerBase
