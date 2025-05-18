@@ -62,6 +62,7 @@ namespace BookStore.Controllers
 
             var bookList = books.Select(b => new BookDTO
             {
+                Id=b.Id,
                 Title = b.Title,
                 Author = b.Author,
                 Description = b.Description,
