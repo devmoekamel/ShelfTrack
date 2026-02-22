@@ -1,8 +1,7 @@
-﻿using BookStore.DTO;
-using BookStore.Interfaces;
+using BookStore.DTO;
+using BookStore.Services;
 using BookStore.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -13,45 +12,44 @@ namespace BookStore.Controllers
     [Authorize(Roles = "User")]
     public class PlanController : ControllerBase
     {
-        private readonly IPlanRepo planRepo;
+        private readonly IPlanService _planService;
 
-        public PlanController(IPlanRepo planRepo)
+        public PlanController(IPlanService planService)
         {
-            this.planRepo = planRepo;
+            _planService = planService;
         }
 
         [HttpGet]
-        public ActionResult getAll()
+        public async Task<ActionResult> getAll()
         {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            var plans = planRepo
-                        .GetAll()
-                        .Where(p => p.UserId == userId)
-                        .Select(p=>new PlanDTO()
-                        {
-                            BookId = p.Id,
-                            StartDate = p.StartDate,
-                            EndDate = p.EndDate 
-                        });
-            return Ok(plans);
+            var plans = await _planService.GetAllAsync();
+            
+            var planDTOs = plans
+                .Where(p => p.UserId == userId)
+                .Select(p => new PlanDTO()
+                {
+                    BookId = p.Id,
+                    StartDate = p.StartDate,
+                    EndDate = p.EndDate
+                });
+            return Ok(planDTOs);
         }
 
-
         [HttpGet("{id:int}")]
-        public ActionResult getPlanbyId(int id)
+        public async Task<ActionResult> getPlanbyId(int id)
         {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
-            var plan = planRepo.GetById(id);
+            var plan = await _planService.GetByIdAsync(id);
             return Ok(plan);
         }
 
         [HttpGet("book/{id:int}")]
-
-        public ActionResult getPlanByBookId(int id)
+        public async Task<ActionResult> getPlanByBookId(int id)
         {
-            var plan = planRepo.GetplanByBookId(id);
+            var plan = await _planService.GetPlanByBookIdAsync(id);
 
-            if(plan == null)
+            if (plan == null)
             {
                 return NotFound("There's No Plan With This ID");
             }
@@ -64,12 +62,10 @@ namespace BookStore.Controllers
             };
             
             return Ok(PlanData);
-            
         }
 
-
         [HttpPost]
-        public ActionResult AddPlan (PlanDTO PlanData)
+        public async Task<ActionResult> AddPlan(PlanDTO PlanData)
         {
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
@@ -77,58 +73,55 @@ namespace BookStore.Controllers
             {
                 return BadRequest(ModelState);
             }
-            Plan newPlan  = new() {
-            StartDate = PlanData.StartDate,
-            EndDate = PlanData.EndDate,
-            UserId = userId,
-            BookId = PlanData.BookId,
+            Plan newPlan = new()
+            {
+                StartDate = PlanData.StartDate,
+                EndDate = PlanData.EndDate,
+                UserId = userId,
+                BookId = PlanData.BookId,
             };
-            planRepo.Add(newPlan);
-            planRepo.Save();
+            await _planService.AddAsync(newPlan);
+            await _planService.SaveAsync();
             return Ok(PlanData);
         }
 
-
         [HttpPut]
-        public ActionResult UpdatePlan (int id,PlanDTO planData) {
-        
-            Plan plan = planRepo.GetById(id);
-            if(plan is null)
+        public async Task<ActionResult> UpdatePlan(int id, PlanDTO planData)
+        {
+            var plan = await _planService.GetByIdAsync(id);
+            if (plan == null)
             {
                 return NotFound("There's No Plan With This ID");
             }
-            if(!ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier).Value;
 
-            Plan newPlan = new()
-            {
-                StartDate = planData.StartDate,
-                EndDate = planData.EndDate,
-                UserId = userId,
-                BookId = planData.BookId,
-            };
-            planRepo.Update(id, plan);
-            planRepo.Save();
+            plan.StartDate = planData.StartDate;
+            plan.EndDate = planData.EndDate;
+            plan.UserId = userId;
+            plan.BookId = planData.BookId;
+
+            _planService.Update(plan);
+            await _planService.SaveAsync();
             return Ok(planData);
         }
 
         [HttpDelete]
-        public ActionResult DeletePlan (int id)
+        public async Task<ActionResult> DeletePlan(int id)
         {
-            Plan plan = planRepo.GetById(id);
-            if (plan is null)
+            var plan = await _planService.GetByIdAsync(id);
+            if (plan == null)
             {
                 return NotFound("There's No Plan With This ID");
             }
 
-            planRepo.RemoveById(id);
-            planRepo.Save();
+            _planService.DeleteById(id);
+            await _planService.SaveAsync();
 
             return Ok("Plan Deleted succefully");
         }
-
     }
 }

@@ -1,11 +1,8 @@
-﻿using BookStore.DTO;
-using BookStore.Interfaces;
+using BookStore.DTO;
+using BookStore.Services;
 using BookStore.Models;
-using BookStore.Reporisatory;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace BookStore.Controllers
@@ -14,19 +11,20 @@ namespace BookStore.Controllers
     [ApiController]
     public class bookController : ControllerBase
     {
+        private readonly IBookService _bookService;
+        private readonly IPurchaseService _purchaseService;
+        private readonly IReviewService _reviewService;
 
-        private readonly IBookReporisatory bookrepo;
-        private readonly IPurchaseRepository ipurchase;
-        private readonly IReviewRepository reivew;
-        public bookController(IBookReporisatory bookrepo, IPurchaseRepository ipurchase)
+        public bookController(IBookService bookService, IPurchaseService purchaseService, IReviewService reviewService)
         {
-            this.bookrepo = bookrepo;
-            this.ipurchase= ipurchase;
-            this.reivew = reivew;
+            _bookService = bookService;
+            _purchaseService = purchaseService;
+            _reviewService = reviewService;
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult add(BookDTO bookdata)
+        public async Task<IActionResult> add(BookDTO bookdata)
         {
             if (!ModelState.IsValid)
             {
@@ -44,25 +42,21 @@ namespace BookStore.Controllers
                 Price = bookdata.Price,
                 CoverImageURL = bookdata.CoverImageURL,
                 PublishedDate = bookdata.PublishedDate,
-                
                 Categoryid = bookdata.Categoryid
             };
-            bookrepo.Add(book);
-            bookrepo.Save();
+            await _bookService.AddAsync(book);
+            await _bookService.SaveAsync();
             return Ok(book);
-
-
-
         }
 
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll()
         {
-            var books = bookrepo.GetAll();
+            var books = await _bookService.GetAllAsync();
 
             var bookList = books.Select(b => new BookDTO
             {
-                Id=b.Id,
+                Id = b.Id,
                 Title = b.Title,
                 Author = b.Author,
                 Description = b.Description,
@@ -77,22 +71,22 @@ namespace BookStore.Controllers
 
             return Ok(bookList);
         }
+
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public IActionResult Update(int id, BookDTO bookdata)
+        public async Task<IActionResult> Update(int id, BookDTO bookdata)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var existingBook = bookrepo.GetById(id);
+            var existingBook = await _bookService.GetByIdAsync(id);
             if (existingBook == null)
             {
                 return NotFound();
             }
 
-            
             existingBook.Title = bookdata.Title;
             existingBook.Author = bookdata.Author;
             existingBook.Description = bookdata.Description;
@@ -104,33 +98,32 @@ namespace BookStore.Controllers
             existingBook.PublishedDate = bookdata.PublishedDate;
             existingBook.Categoryid = bookdata.Categoryid;
 
-            bookrepo.Update(id,existingBook);
-            bookrepo.Save();
+            _bookService.Update(existingBook);
+            await _bookService.SaveAsync();
 
             return Ok(existingBook);
         }
 
-
         [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var book = bookrepo.GetById(id);
+            var book = await _bookService.GetByIdAsync(id);
             if (book == null)
             {
                 return NotFound("Book not found");
             }
 
-            bookrepo.RemoveByObj(book);  
-            bookrepo.Save();
+            _bookService.Delete(book);
+            await _bookService.SaveAsync();
 
             return Ok(new { message = "Book deleted successfully" });
         }
 
         [HttpGet("filter")]
-        public IActionResult FilterBooks(double? minPrice, double? maxPrice, int? categoryId)
+        public async Task<IActionResult> FilterBooks(double? minPrice, double? maxPrice, int? categoryId)
         {
-            var books = bookrepo.GetAll().ToList();
+            var books = (await _bookService.GetAllAsync()).ToList();
 
             if (minPrice != null)
             {
@@ -147,123 +140,105 @@ namespace BookStore.Controllers
                 books = books.Where(b => b.Categoryid == categoryId).ToList();
             }
 
-            List<BookDTO> result = new List<BookDTO>();
-
-            foreach (var b in books)
+            List<BookDTO> result = books.Select(b => new BookDTO
             {
-                result.Add(new BookDTO
-                {
-                    Title = b.Title,
-                    Author = b.Author,
-                    Description = b.Description,
-                    Genre = b.Genre,
-                    ISBN = b.ISBN,
-                    PageCount = b.PageCount,
-                    Price = b.Price,
-                    CoverImageURL = b.CoverImageURL,
-                    PublishedDate = b.PublishedDate,
-                    Categoryid = b.Categoryid
-                });
-            }
+                Title = b.Title,
+                Author = b.Author,
+                Description = b.Description,
+                Genre = b.Genre,
+                ISBN = b.ISBN,
+                PageCount = b.PageCount,
+                Price = b.Price,
+                CoverImageURL = b.CoverImageURL,
+                PublishedDate = b.PublishedDate,
+                Categoryid = b.Categoryid
+            }).ToList();
 
             return Ok(result);
         }
 
         [HttpGet("sortbyprice")]
-        public IActionResult SortByPrice()
+        public async Task<IActionResult> SortByPrice()
         {
-            var books = bookrepo.GetAll().OrderBy(b => b.Price).ToList();
+            var books = (await _bookService.GetAllAsync()).OrderBy(b => b.Price).ToList();
 
-            List<BookDTO> result = new List<BookDTO>();
-
-            foreach (var b in books)
+            var result = books.Select(b => new BookDTO
             {
-                result.Add(new BookDTO
-                {
-                    Title = b.Title,
-                    Author = b.Author,
-                    Description = b.Description,
-                    Genre = b.Genre,
-                    ISBN = b.ISBN,
-                    PageCount = b.PageCount,
-                    Price = b.Price,
-                    CoverImageURL = b.CoverImageURL,
-                    PublishedDate = b.PublishedDate,
-                    Categoryid = b.Categoryid
-                });
-            }
+                Title = b.Title,
+                Author = b.Author,
+                Description = b.Description,
+                Genre = b.Genre,
+                ISBN = b.ISBN,
+                PageCount = b.PageCount,
+                Price = b.Price,
+                CoverImageURL = b.CoverImageURL,
+                PublishedDate = b.PublishedDate,
+                Categoryid = b.Categoryid
+            }).ToList();
 
             return Ok(result);
         }
 
         [HttpGet("freebooks")]
-        public IActionResult GetFreeBooks()
+        public async Task<IActionResult> GetFreeBooks()
         {
-            var books = bookrepo.GetAll().Where(b => b.Price == 0).ToList();
+            var books = (await _bookService.GetAllAsync()).Where(b => b.Price == 0).ToList();
 
-            List<BookDTO> result = new List<BookDTO>();
-
-            foreach (var b in books)
+            var result = books.Select(b => new BookDTO
             {
-                result.Add(new BookDTO
-                {
-                    Title = b.Title,
-                    Author = b.Author,
-                    Description = b.Description,
-                    Genre = b.Genre,
-                    ISBN = b.ISBN,
-                    PageCount = b.PageCount,
-                    Price = b.Price,
-                    CoverImageURL = b.CoverImageURL,
-                    PublishedDate = b.PublishedDate,
-                    Categoryid = b.Categoryid
-                });
-            }
+                Title = b.Title,
+                Author = b.Author,
+                Description = b.Description,
+                Genre = b.Genre,
+                ISBN = b.ISBN,
+                PageCount = b.PageCount,
+                Price = b.Price,
+                CoverImageURL = b.CoverImageURL,
+                PublishedDate = b.PublishedDate,
+                Categoryid = b.Categoryid
+            }).ToList();
 
             return Ok(result);
         }
 
         [HttpGet("paginated")]
-        public IActionResult GetPaginatedBooks(int pageNumber = 1, int pageSize = 5)
+        public async Task<IActionResult> GetPaginatedBooks(int pageNumber = 1, int pageSize = 5)
         {
-            var books = bookrepo.GetAll()
+            var allBooks = await _bookService.GetAllAsync();
+            var books = allBooks
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
 
-            List<BookDTO> result = new List<BookDTO>();
-
-            foreach (var b in books)
+            var result = books.Select(b => new BookDTO
             {
-                result.Add(new BookDTO
-                {
-                    Title = b.Title,
-                    Author = b.Author,
-                    Description = b.Description,
-                    Genre = b.Genre,
-                    ISBN = b.ISBN,
-                    PageCount = b.PageCount,
-                    Price = b.Price,
-                    CoverImageURL = b.CoverImageURL,
-                    PublishedDate = b.PublishedDate,
-                    Categoryid = b.Categoryid
-                });
-            }
+                Title = b.Title,
+                Author = b.Author,
+                Description = b.Description,
+                Genre = b.Genre,
+                ISBN = b.ISBN,
+                PageCount = b.PageCount,
+                Price = b.Price,
+                CoverImageURL = b.CoverImageURL,
+                PublishedDate = b.PublishedDate,
+                Categoryid = b.Categoryid
+            }).ToList();
 
             return Ok(result);
         }
 
         [HttpGet("top5rated")]
-        public IActionResult Top5RatedBooks()
+        public async Task<IActionResult> Top5RatedBooks()
         {
-            var reviews = reivew?.GetAll();
-            if (reviews == null)
+            var reviews = await _reviewService.GetAllAsync();
+            
+            if (reviews == null || !reviews.Any())
             {
                 return NotFound("No reviews found.");
             }
 
             var goodReviews = reviews
-                .Where(r => r.Rating == 5 || r.Rating == 4 || r.Rating == 3)
+                .Where(r => r.Rating >= 3)
                 .OrderByDescending(r => r.Rating)
                 .Take(5)
                 .ToList();
@@ -272,8 +247,8 @@ namespace BookStore.Controllers
 
             foreach (var review in goodReviews)
             {
-                var book = bookrepo?.GetById(review.BookId);
-                if (book != null) // check if book is found
+                var book = await _bookService.GetByIdAsync(review.BookId);
+                if (book != null)
                 {
                     books.Add(new BookDTO
                     {
@@ -298,12 +273,5 @@ namespace BookStore.Controllers
 
             return Ok(books);
         }
-
-
-
-
-
-
-
     }
 }

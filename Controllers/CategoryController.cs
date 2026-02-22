@@ -1,44 +1,39 @@
-﻿using BookStore.DTO;
-using BookStore.Interfaces;
+using BookStore.DTO;
+using BookStore.Services;
 using BookStore.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BookStore.Controllers
 {
-
     [Route("api/[controller]")]
     [ApiController]
     public class CategoryController : ControllerBase
     {
-        private readonly ICategoryRepo _categoryRepo;
+        private readonly ICategoryService _categoryService;
 
-        public CategoryController(ICategoryRepo categoryRepo)
+        public CategoryController(ICategoryService categoryService)
         {
-            _categoryRepo = categoryRepo;
-        }
-
-
-        // GET: api/Category
-      [Authorize(Roles = "User")]
-
-        [HttpGet]
-        public ActionResult GetAll()
-        {
-            var categories = _categoryRepo.GetAll().Select(c=>new CategoryDTO()
-            {
-                Name = c.Name,
-            });
-            return Ok(categories);
+            _categoryService = categoryService;
         }
 
         [Authorize(Roles = "User")]
-
-        // GET: api/Category/WithBooks/5
-        [HttpGet("WithBooks/{id:int}")]
-        public ActionResult<CategoryWithBooksDTO> GetCategoryWithBooks(int id)
+        [HttpGet]
+        public async Task<ActionResult> GetAll()
         {
-            var category = _categoryRepo.GetCategoryWithBooks(id);
+            var categories = await _categoryService.GetAllAsync();
+            var categoryDTOs = categories.Select(c => new CategoryDTO
+            {
+                Name = c.Name,
+            });
+            return Ok(categoryDTOs);
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpGet("WithBooks/{id:int}")]
+        public async Task<ActionResult<CategoryWithBooksDTO>> GetCategoryWithBooks(int id)
+        {
+            var category = await _categoryService.GetCategoryWithBooksAsync(id);
             if (category == null)
             {
                 return NotFound("Category not found");
@@ -53,20 +48,19 @@ namespace BookStore.Controllers
                     Author = b.Author,
                     PageCount = b.PageCount,
                     Price = b.Price
-
                 }).ToList() ?? new List<BOOkDTO>()
             };
             return Ok(dto);
         }
 
-        // GET: api/Category/5
+        [Authorize(Roles = "User")]
         [HttpGet("{id:int}")]
-        public ActionResult GetById(int id)
+        public async Task<ActionResult> GetById(int id)
         {
-            var category = _categoryRepo.GetById(id);
+            var category = await _categoryService.GetByIdAsync(id);
             if (category == null)
                 return NotFound($"Category with ID {id} not found.");
-           
+
             var categoryDto = new CategoryDTO
             {
                 Name = category.Name
@@ -75,11 +69,9 @@ namespace BookStore.Controllers
             return Ok(categoryDto);
         }
 
-        // POST: api/Category
         [Authorize(Roles = "Admin")]
-
         [HttpPost]
-        public ActionResult AddCategory(CategoryDTO categoryDto)
+        public async Task<ActionResult> AddCategory(CategoryDTO categoryDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -89,41 +81,37 @@ namespace BookStore.Controllers
                 Name = categoryDto.Name
             };
 
-            _categoryRepo.Add(newCategory);
-            _categoryRepo.Save();
+            await _categoryService.AddAsync(newCategory);
+            await _categoryService.SaveAsync();
 
             return Ok(categoryDto);
         }
 
-        // PUT: api/Category/5
         [Authorize(Roles = "Admin")]
-
         [HttpPut("{id:int}")]
-        public ActionResult UpdateCategory(int id, CategoryDTO categoryDto)
+        public async Task<ActionResult> UpdateCategory(int id, CategoryDTO categoryDto)
         {
-            var existingCategory = _categoryRepo.GetById(id);
+            var existingCategory = await _categoryService.GetByIdAsync(id);
             if (existingCategory == null)
                 return NotFound($"Category with ID {id} not found.");
 
             existingCategory.Name = categoryDto.Name;
-            _categoryRepo.Update(id, existingCategory);
-            _categoryRepo.Save();
+            _categoryService.Update(existingCategory);
+            await _categoryService.SaveAsync();
 
             return Ok(categoryDto);
         }
 
-        // DELETE: api/Category/5
         [Authorize(Roles = "Admin")]
-
         [HttpDelete("{id:int}")]
-        public ActionResult DeleteCategory(int id)
+        public async Task<ActionResult> DeleteCategory(int id)
         {
-            var category = _categoryRepo.GetById(id);
+            var category = await _categoryService.GetByIdAsync(id);
             if (category == null)
                 return NotFound($"Category with ID {id} not found.");
 
-            _categoryRepo.RemoveById(id);
-            _categoryRepo.Save();
+            _categoryService.DeleteById(id);
+            await _categoryService.SaveAsync();
 
             return Ok("Category deleted successfully.");
         }

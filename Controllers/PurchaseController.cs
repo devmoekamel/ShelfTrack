@@ -1,7 +1,7 @@
-﻿using BookStore.DTO;
-using BookStore.Interfaces;
+using BookStore.DTO;
+using BookStore.Services;
 using BookStore.Models;
-using Microsoft.AspNetCore.Http;
+using BookStore.context;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using System.Linq;
@@ -10,74 +10,66 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookStore.Controllers
 {
-    [Authorize (Roles ="User")]
-    
+    [Authorize(Roles = "User")]
     [Route("api/[controller]")]
     [ApiController]
     public class PurchaseController : ControllerBase
     {
-        private readonly IPurchaseRepository purchaseRepository;
-        private readonly string userId;
-        public PurchaseController(IPurchaseRepository purchaseRepository)
+        private readonly IPurchaseService _purchaseService;
+        private readonly BookStoreContext _context;
+
+        public PurchaseController(IPurchaseService purchaseService, BookStoreContext context)
         {
-            this.purchaseRepository = purchaseRepository;
-           
+            _purchaseService = purchaseService;
+            _context = context;
         }
 
-        // POST: api/Purchase
         [HttpPost]
-        public IActionResult AddPurchases([FromBody] PurchaseDTO purchaseDTO)
+        public async Task<IActionResult> AddPurchases([FromBody] PurchaseDTO purchaseDTO)
         {
-          string  userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
             if (!ModelState.IsValid)
             {
-                return BadRequest(ModelState); 
+                return BadRequest(ModelState);
             }
 
             var purchase = new Purchase
             {
-              
                 UserId = userId,
                 BookId = purchaseDTO.BookId,
                 PurchaseDate = purchaseDTO.PurchaseDate
             };
 
-            purchaseRepository.Add(purchase);
-            purchaseRepository.Save();
+            await _purchaseService.AddAsync(purchase);
+            await _purchaseService.SaveAsync();
 
-            return Ok(purchaseDTO); 
+            return Ok(purchaseDTO);
         }
 
-      
-
         [HttpGet]
-        [Authorize(Roles ="Admin")] 
-        public IActionResult GetAllPurchases()
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetAllPurchases()
         {
-
-
-            var purchases = purchaseRepository.GetAll()
+            var purchases = await _context.Purchases
+                .Where(p => !p.IsDeleted)
                 .Include(p => p.Book)
                 .Include(p => p.User)
-              
                 .Select(p => new PurchaseDisplayDTO
                 {
                     Id = p.Id,
                     BookTitle = p.Book.Title,
-
                     PurchaseDate = p.PurchaseDate
                 })
-                .ToList();
+                .ToListAsync();
 
             return Ok(purchases);
         }
 
-
-        // GET: api/Purchase/{id}
         [HttpGet("{id:int}")]
-        public IActionResult GetByIdPurchase(int id)
+        public async Task<IActionResult> GetByIdPurchase(int id)
         {
-            var purchase = purchaseRepository.GetAll()
+            var purchase = await _context.Purchases
+                .Where(r => !r.IsDeleted)
                 .Include(r => r.User)
                 .Include(r => r.Book)
                 .Where(r => r.Id == id)
@@ -86,7 +78,7 @@ namespace BookStore.Controllers
                     Id = r.Id,
                     BookTitle = r.Book.Title,
                     PurchaseDate = r.PurchaseDate
-                }).FirstOrDefault();
+                }).FirstOrDefaultAsync();
             if (purchase == null)
             {
                 return NotFound();
@@ -95,40 +87,34 @@ namespace BookStore.Controllers
             return Ok(purchase);
         }
 
-
-
-        // DELETE: api/Purchase/{id}
         [HttpDelete("{id:int}")]
-        public IActionResult RemovePurchase(int id)
+        public async Task<IActionResult> RemovePurchase(int id)
         {
-            var purchase = purchaseRepository.GetById(id);
+            var purchase = await _purchaseService.GetByIdAsync(id);
             if (purchase == null)
             {
                 return NotFound("Purchase not found");
             }
 
-            purchaseRepository.RemoveById(id);
-            purchaseRepository.Save();
-
+            _purchaseService.DeleteById(id);
+            await _purchaseService.SaveAsync();
 
             return Ok("Purchase Deleted succefully");
         }
 
-        // GET: api/Purchase/user
         [HttpGet("user")]
-
-        public IActionResult GetByUserId()
+        public async Task<IActionResult> GetByUserId()
         {
-             string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
-
+            string userId = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userId))
             {
                 return BadRequest("User not authenticated");
             }
 
-            var purchases = purchaseRepository.GetAll().Where(u => u.UserId == userId);
-            return Ok(purchases); 
+            var purchases = await _purchaseService.GetAllAsync();
+            var userPurchases = purchases.Where(u => u.UserId == userId);
+            return Ok(userPurchases);
         }
     }
 }

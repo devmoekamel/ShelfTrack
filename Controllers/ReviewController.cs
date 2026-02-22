@@ -1,7 +1,7 @@
-﻿using BookStore.DTO;
-using BookStore.Interfaces;
+using BookStore.DTO;
+using BookStore.Services;
 using BookStore.Models;
-using BookStore.Reporisatory;
+using BookStore.context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,22 +10,21 @@ using System.Security.Claims;
 namespace BookStore.Controllers
 {
     [Authorize(Roles = "User")]
-
     [Route("api/[controller]")]
     [ApiController]
     public class ReviewController : ControllerBase
     {
-        private readonly IReviewRepository reviewRepository;
+        private readonly IReviewService _reviewService;
+        private readonly BookStoreContext _context;
 
-        public ReviewController(IReviewRepository reviewRepository)
+        public ReviewController(IReviewService reviewService, BookStoreContext context)
         {
-            this.reviewRepository = reviewRepository;
+            _reviewService = reviewService;
+            _context = context;
         }
 
-        // POST: api/Review
         [HttpPost]
-       // [Authorize] 
-        public IActionResult AddReview([FromBody] ReviewDTO reviewDTO)
+        public async Task<IActionResult> AddReview([FromBody] ReviewDTO reviewDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -46,16 +45,15 @@ namespace BookStore.Controllers
                 ReviewDate = DateTime.Now
             };
 
-            reviewRepository.Add(review);
-            reviewRepository.Save();
+            await _reviewService.AddAsync(review);
+            await _reviewService.SaveAsync();
 
             return Ok(reviewDTO);
         }
 
-        // PUT: api/Review/{id}
         [HttpPut("{id:int}")]
         [Authorize]
-        public IActionResult UpdateReview(int id, [FromBody] UpdateReviewDTO updateDTO)
+        public async Task<IActionResult> UpdateReview(int id, [FromBody] UpdateReviewDTO updateDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -67,8 +65,7 @@ namespace BookStore.Controllers
                 return BadRequest("User not authenticated");
             }
 
-
-            var existingReview = reviewRepository.GetById(id);
+            var existingReview = await _reviewService.GetByIdAsync(id);
             if (existingReview == null)
                 return NotFound("Review not found");
 
@@ -83,45 +80,41 @@ namespace BookStore.Controllers
 
             existingReview.ReviewDate = DateTime.Now;
 
-            reviewRepository.Update(existingReview.Id, existingReview);
-            reviewRepository.Save();
+            _reviewService.Update(existingReview);
+            await _reviewService.SaveAsync();
 
             return Ok(existingReview);
         }
 
-
-
-        // GET: api/Review
         [HttpGet]
-        public IActionResult GetAllReview()
+        public async Task<IActionResult> GetAllReview()
         {
-            var reviews = reviewRepository.GetAll()
+            var reviews = await _context.Reviews
+                .Where(r => !r.IsDeleted)
                 .Include(r => r.Book)
                 .Include(r => r.User)
                 .Select(r => new
                 {
                     Id = r.Id,
-                    BookTitle = r.Book.Title,     
-                    UserName = r.User.UserName,    
+                    BookTitle = r.Book.Title,
+                    UserName = r.User.UserName,
                     Rating = r.Rating,
                     Comment = r.Comment,
                     ReviewDate = r.ReviewDate
                 })
-                .ToList();
+                .ToListAsync();
 
             return Ok(reviews);
         }
 
-
-
-        // GET: api/Review/{id}
         [HttpGet("{id:int}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var review = reviewRepository.GetAll()
+            var review = await _context.Reviews
+                .Where(r => !r.IsDeleted)
                 .Include(r => r.Book)
                 .Include(r => r.User)
-                .FirstOrDefault(r => r.Id == id);
+                .FirstOrDefaultAsync(r => r.Id == id);
 
             if (review == null)
                 return NotFound();
@@ -129,8 +122,8 @@ namespace BookStore.Controllers
             var result = new
             {
                 Id = review.Id,
-                BookTitle = review.Book.Title,      
-                UserName = review.User.UserName,    
+                BookTitle = review.Book.Title,
+                UserName = review.User.UserName,
                 Rating = review.Rating,
                 Comment = review.Comment,
                 ReviewDate = review.ReviewDate
@@ -139,45 +132,42 @@ namespace BookStore.Controllers
             return Ok(result);
         }
 
-
-
-        // DELETE: api/Review/{id}
         [HttpDelete("{id:int}")]
-        public IActionResult RemoveReview(int id)
+        public async Task<IActionResult> RemoveReview(int id)
         {
-            var review = reviewRepository.GetById(id);
+            var review = await _reviewService.GetByIdAsync(id);
             if (review == null)
             {
                 return NotFound("Review not found");
             }
 
-           reviewRepository.RemoveById(id);
-            reviewRepository.Save();
-
+            _reviewService.DeleteById(id);
+            await _reviewService.SaveAsync();
 
             return Ok("Review Deleted succefully");
         }
 
         [HttpGet("book/{bookId:int}")]
-        public IActionResult GetReviewsByBook(int bookId)
+        public async Task<IActionResult> GetReviewsByBook(int bookId)
         {
-            var reviews = reviewRepository.GetAll()
-                .Where(r => r.BookId == bookId )
+            var reviews = await _context.Reviews
+                .Where(r => r.BookId == bookId && !r.IsDeleted)
                 .Select(r => new DisplayReviewDTO
                 {
                     Id = r.Id,
                     Rate = r.Rating,
                     Comment = r.Comment,
                     ReviewDate = r.ReviewDate
-                }).ToList();
+                }).ToListAsync();
 
             return Ok(reviews);
         }
 
         [HttpGet("top-books")]
-        public IActionResult GetTopRatedBooks()
+        public async Task<IActionResult> GetTopRatedBooks()
         {
-            var topBooks = reviewRepository.GetAll()
+            var topBooks = await _context.Reviews
+                .Where(r => !r.IsDeleted)
                 .GroupBy(r => r.BookId)
                 .Select(g => new
                 {
@@ -189,11 +179,9 @@ namespace BookStore.Controllers
                 .OrderByDescending(b => b.AverageRating)
                 .ThenByDescending(b => b.ReviewCount)
                 .Take(5)
-                .ToList();
+                .ToListAsync();
 
             return Ok(topBooks);
         }
-
-
     }
 }
