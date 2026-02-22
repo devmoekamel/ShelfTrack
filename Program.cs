@@ -1,14 +1,14 @@
 using BookStore.context;
-using BookStore.Interfaces;
+using BookStore.Infrastructure;
 using BookStore.Models;
-using BookStore.Reporisatory;
+using BookStore.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
+
 namespace BookStore
 {
     public class Program
@@ -16,7 +16,6 @@ namespace BookStore
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -26,15 +25,15 @@ namespace BookStore
                 options.UseSqlServer(builder.Configuration.GetConnectionString("cs"));
             });
 
-            builder.Services.AddScoped<IPlanRepo,PlanRepo>();
-            builder.Services.AddScoped<IBookReporisatory, BookReporisatory>();
-            builder.Services.AddScoped<IPurchaseRepository, PurchaseRepository>();
-            builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
-            builder.Services.AddScoped<ICategoryRepo, CategoryRepo>();
-            builder.Services.AddScoped<IMissionRepo, MissionRepo>();
-
-
-
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            builder.Services.AddScoped(typeof(IEntityService<>), typeof(EntityService<>));
+            
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddScoped<IBookService, BookService>();
+            builder.Services.AddScoped<IPlanService, PlanService>();
+            builder.Services.AddScoped<IMissionService, MissionService>();
+            builder.Services.AddScoped<IReviewService, ReviewService>();
+            builder.Services.AddScoped<IPurchaseService, PurchaseService>();
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
               .AddEntityFrameworkStores<BookStoreContext>();
@@ -60,14 +59,12 @@ namespace BookStore
             });
             builder.Services.AddSwaggerGen(swagger =>
             {
-                //This is to generate the Default UI of Swagger Documentation    
                 swagger.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
                     Title = "Book Store",
                     Description = " ITI Projrcy"
                 });
-                // To Enable authorization using Swagger (JWT)    
                 swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
                     Name = "Authorization",
@@ -90,7 +87,7 @@ namespace BookStore
                     },
                     new string[] {}
                     }
-                    });
+                });
             });
             var app = builder.Build();
 
@@ -101,7 +98,6 @@ namespace BookStore
             }
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
