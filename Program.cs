@@ -1,5 +1,6 @@
 using BookStore.context;
 using BookStore.Infrastructure;
+using BookStore.Middlewares;
 using BookStore.Models;
 using BookStore.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -98,6 +99,7 @@ namespace BookStore
             }
 
             app.UseAuthorization();
+            app.UseMiddleware<GlobalExceptionMiddleware>();
 
             app.MapControllers();
 
